@@ -1,7 +1,7 @@
 ---
 - name: postgresql.yml | All roles
   hosts: postgresql
-  become: True
+  become: true
 
   roles:
     - { role: common,                     tags: ["common"] }
