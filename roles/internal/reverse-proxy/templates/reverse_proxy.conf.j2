@@ -25,11 +25,25 @@ SSLCryptoDevice builtin
     SSLProxyCheckPeerName off
     SSLProxyCheckPeerExpire off
 {% endif %}
-    SSLCertificateFile {{ reverse_proxy_etc_ssl_certs[ansible_os_family] }}{{ reverse_proxy_vhosts[hst].server_name }}.pem
     SSLCertificateKeyFile {{ reverse_proxy_etc_ssl_private[ansible_os_family] }}reverse_proxy.pem
+    SSLCertificateFile {{ reverse_proxy_etc_ssl_certs[ansible_os_family] }}{{ reverse_proxy_vhosts[hst].server_name }}.pem
+{% if reverse_proxy_certs_bundle_url is defined %}
+    SSLCertificateChainFile {{ reverse_proxy_etc_ssl_certs[ansible_os_family] }}{{ reverse_proxy_vhosts[hst].server_name }}-bundle.pem
+{% endif %}
     RequestHeader set X-Forwarded-Proto "https"
     AllowEncodedSlashes NoDecode
 
+{% if reverse_proxy_global_favicon is defined %}
+    RewriteEngine on
+    RewriteRule favicon.ico$ /favicon.ico [NC]
+    ProxyPass /favicon.ico !
+{% endif %}
+{% if reverse_proxy_environment is defined %}
+    ProxyPass /environment !
+{% endif %}
+{% for m in reverse_proxy_redirect_matches %}
+    RedirectMatch {{ m }}
+{% endfor %}
     DocumentRoot /var/www/html
 
     <Directory />
@@ -38,11 +52,11 @@ SSLCryptoDevice builtin
     </Directory>
 
 {%   for pp in reverse_proxy_vhosts[hst].proxy_passes %}
-    ProxyPass {{ reverse_proxy_vhosts[hst].proxy_passes[pp]['proxy_pass'] }}
-{%     if reverse_proxy_vhosts[hst].proxy_passes[pp]['proxy_pass_reverse'] is defined  %}
-    ProxyPassReverse {{ reverse_proxy_vhosts[hst].proxy_passes[pp]['proxy_pass_reverse'] }}
+    ProxyPass {{ pp['proxy_pass'] }}
+{%     if pp['proxy_pass_reverse'] is defined  %}
+    ProxyPassReverse {{ pp['proxy_pass_reverse'] }}
 {%     else %}
-    ProxyPassReverse {{ reverse_proxy_vhosts[hst].proxy_passes[pp]['proxy_pass'] }}
+    ProxyPassReverse {{ pp['proxy_pass'] }}
 {%     endif %}
 {%   endfor %}
     LogLevel {{ reverse_proxy_log_level }}

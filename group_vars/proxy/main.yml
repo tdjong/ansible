@@ -1,40 +1,36 @@
 ---
-proxy_port: 0
-proxy_host: ''
-#proxy_no_proxy: 'nip.io' # comma separated list
-
-proxy_allowed_ips: 
+proxy_allowed_ips:
+  - 1.1.1.1
   - 1.1.1.2
   - 1.1.1.3
   - 1.1.1.4
-  - 1.1.1.7  
+  - 1.1.1.7
+  - 1.1.1.8
+  - 1.1.1.9
+  - 1.1.1.10
+  - 1.1.1.11  
+proxy_upstream_always_direct_ips:
+  - 1.1.1.1 
 
-squid_acls:
-  - name: localnet
-    classifier: src
-    value: "\"{{ proxy_allowd_ips_file }}\""
+# dynamic vars set in a role cannot be used on other roles 
+# so we set squid_config_directory, squid_config_file here
+squid_config_directory: /etc/squid 
+squid_config_file: squid.conf
+squid_conf_include_dir: /etc/squid/conf.d
 
-reverse_proxy_vhosts:
-  sh:
-    server_name: sh.1.1.1.3.nip.io 
-    port: 443
-    proxy_verify: false
-    proxy_passes:
-      sq:
-        proxy_pass: /sonarqube https://1.1.1.4/sonarqube
-        #proxy_pass_reverse: /sonarqube https://1.1.1.4/sonarqube/
-      nexus:
-        proxy_pass: /nexus http://1.1.1.7:8081/nexus nocanon
-        proxy_pass_reverse: /nexus http://1.1.1.7:8081/nexus
+# Configure upstream proxy server
+# proxy_upstream_server: 10.0.2.2
+# proxy_upstream_port: 8888
+
 #squid_cache_rules:
 #  - acl: localnet
 #    decision: deny
 
-# move to alias
-c2_alias:
-  roles:
-    proxy:
-      logs: ["/var/log/squid/*.log","/var/log/squid/squid.out"]
-      configs: 
-        - "{{ squid_config_directory }}/{{ squid_config_file }}"
-        - "{{ proxy_allowd_ips_file }}"
+squid_ssh_proxy_port: 22
+
+postfix_mail_name: ESMTP Mailrelay CICD Platform
+
+postfix_mynetworks: 1.1.1.0/28 # 1.1.1.0 -> 1.1.1.15
+# postfix_mynetworks: 1.1.1.2, 1.1.1.3
+postfix_relayhost: "[10.0.2.2]:2525"
+postfix_relay_domains: sh.1.1.1.3.nip.io

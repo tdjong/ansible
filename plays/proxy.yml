@@ -1,11 +1,9 @@
 ---
 - name: proxy.yml | All roles
   hosts: proxy
-  become: true
+  become: yes
 
   roles:
     - { role: common,             tags: ["common"] }
-    - { role: nfs,                tags: ["nfs"] }
+    - { role: squid,              tags: ["proxy"] }
     - { role: proxy,              tags: ["proxy"] }
-    - { role: robertdebock.squid, tags: ["proxy"] }
-    - { role: reverse-proxy,      tags: ["reverse-proxy"] }

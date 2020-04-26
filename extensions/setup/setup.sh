@@ -35,17 +35,22 @@ if [ "$system" == "Linux" ]; then
     fi
 fi
 
-
 # Check if root
 # Since we need to make sure paths are okay we need to run as normal user he will use ansible
 [[ "$(whoami)" == "root" ]] && msg_exit "Please run as a normal user not root"
 
 # Check python
-[[ -z "$(which python)" ]] && msg_exit "Opps python is not installed or not in your path."
+[[ -z "$(which python)" ]] && msg_exit "Oops python is not installed or not in your path."
 # Check pip
 [[ -z "$(which pip)" ]] && msg_exit "pip is not installed!\nYou can try'sudo easy_install pip'"
 # Check python file
 [[ ! -f "$PYTHON_REQUIREMNTS_FILE" ]]  && msg_exit "python_requirements '$PYTHON_REQUIREMNTS_FILE' does not exist or permssion issue.\nPlease check and rerun."
+
+# Check python
+[[ -z "$(which python3)" ]] && msg_exit "Oops python3 is not installed or not in your path."
+python3 -m virtualenv venv
+source venv/bin/activate
+pip3 install ansible
 
 # Install 
 # By default we upgrade all packges to latest. if we need to pin packages use the python_requirements
